@@ -1,0 +1,24 @@
+{
+  "name": "node-egg",
+  "version": "0.0.1",
+  "description": "something test",
+  "main": "klasjdl",
+  "scripts": {
+    "test": "npm run dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "asd"
+  },
+  "keywords": [
+    "asda"
+  ],
+  "author": "zzs",
+  "license": "ISC",
+  "dependencies": {
+    "cherio": "^1.0.0-rc.2",
+    "request": "^2.88.0",
+    "request-promise": "^4.2.2",
+    "selenium-webdriver": "^4.0.0-alpha.1"
+  }
+}
