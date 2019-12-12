@@ -12,25 +12,33 @@ class ReadCourse {
     this.driver = driver
     this.init()
   }
-  async init () {
+  async init() {
     for (let i = 0; i < this.courseList.length; i++) {
       await this.driver.executeScript(`
       window.open(arguments[0])
       `, this.courseList[i])
     }
+    let handers = await this.driver.getAllWindowHandles()
+    let homeHander = await this.driver.getWindowHandle()
+    handers.remove(homeHander)
+    for (let h = 0; h < handers.length; h++) {
+      await this.switchWindow(handers[h])
+      let curUrl = await this.driver.getCurrentUrl()
+      await this.switchToMainContent()
+      let ids = await this.getNav(curUrl)
+      console.log('list-menus', ids)
+      await this.setRequestHeader()
+      // 切换点击事件
+      await this.readClickEvt(ids)
+      // 设置请求头
+
+      console.log('ids--->', ids)
+    }
+    console.log('###############--------------------work-----------------end------####')
     // 切换window
-    await this.switchWindow()
-    let curUrl = await this.driver.getCurrentUrl()
-    await this.switchToMainContent()
-    let ids = await this.getNav(curUrl)
-    await this.setRequestHeader()
-    // 切换点击事件
-    await this.readClickEvt(ids)
-    // 设置请求头
-   
-    console.log('ids--->', ids)
+
   }
-  async readClickEvt (ids) {
+  async readClickEvt(ids) {
     // 获取左边菜单
     for (let i = 0; i < ids.length; i++) {
       let itemId = ids[i].split('_')[1]
@@ -60,6 +68,7 @@ class ReadCourse {
          * 处理视频学习资源
          */
         let menuId = menuIds[t].id.split('_')[1]
+        console.log(menuIds[t])
         if (menuIds[t].type == 'video') await LearnCourse.seeVideo(this.courseId, menuId)
         if (menuIds[t].type == 'test') await LearnCourse.doTest(this.driver)
       }
@@ -67,7 +76,7 @@ class ReadCourse {
     }
     return Promise.resolve()
   }
-  async setRequestHeader () {
+  async setRequestHeader() {
     let cookies = await this.driver.manage().getCookies()
     fs.writeFileSync('./cookies.json', JSON.stringify(cookies))
     let cookieArr = []
@@ -82,21 +91,22 @@ class ReadCourse {
     fetch.setHeaders(cook)
     return Promise.resolve()
   }
-  async switchWindow () {
-    let handers = await this.driver.getAllWindowHandles()
-    let homeHander = await this.driver.getWindowHandle()
-    handers.remove(homeHander)
-    console.log('handers-->', handers)
-    await this.driver.switchTo().window(handers[3])
+  async switchWindow(win) {
+    // let handers = await this.driver.getAllWindowHandles()
+    // let homeHander = await this.driver.getWindowHandle()
+    // handers.remove(homeHander)
+    // console.log('handers-->', handers)
+    await this.driver.switchTo().window(win)
     return Promise.resolve()
   }
-  async switchToMainContent () {
+  async switchToMainContent() {
     await this.driver.wait(until.elementLocated(By.id('mainContent')), 20000)
     await this.driver.switchTo().frame('mainContent')
     return Promise.resolve()
   }
-  async getNav (curUrl) {
+  async getNav(curUrl) {
     this.courseId = new URL(curUrl).searchParams.get("params.courseId")
+
     let ids = await this.driver.executeScript(`
     let arr = [];
     $('#nav .vcon li').each(function(){

@@ -18,6 +18,7 @@ class LearnCourse {
   constructor() {
   }
   static async seeVideo (courseId, itemId) {
+    console.log(`seeVideo:courseId${courseId};itemId${itemId}`)
     let param = {
       'videoStudyRecord.courseId': courseId,
       'videoStudyRecord.itemId': itemId,
@@ -32,14 +33,23 @@ class LearnCourse {
       'studyTime': 5000,
       'resourceTotalTime': '00: 20: 23'
     };
+    const fechRes  = await fetch.post(saveVideoLearnTimeLongRecord, param2)
     let result = (await fetch.post(saveVideoLearnDetailRecord, param)).success
-    await fetch.post(saveVideoLearnTimeLongRecord, param2)
+    console.log(`video--end${fechRes},${result}`)
     return Promise.resolve(result)
   }
   static async doTest (driver) {
     // 先定位元素
     await driver.wait(until.elementLocated(By.id('mainFrame')), 20000)
     await driver.switchTo().frame('mainFrame')  // 切到mainFrame
+    try {
+      await driver.wait(until.elementLocated(By.id('current_testId')), 2000)
+    } catch (e) {
+        console.log(e)
+    }
+    let title = await driver.getTitle()
+    console.log('title', console.log(title))
+   
     // flag  true  没有提交   false 已做过
     let pageInfo = await driver.executeScript(`
       var paperInfo = {};
@@ -47,12 +57,13 @@ class LearnCourse {
       var itemId = $('#current_itemId').val();
       var courseId = $('#current_courseId').val();
       var historyId = $('#current_historyId').val();
-      var flag = $('#current_flag').val()
+      var flag = $('#current_flag').val();
       paperInfo.testId = testId
       paperInfo.itemId = itemId
       paperInfo.courseId = courseId
       paperInfo.historyId = historyId
       paperInfo.flag = ($('.checkanswer').length == 0)
+      paperInfo.href = window.location.href
       return paperInfo
     `);
     console.log('paperInfo--->', JSON.stringify(pageInfo))
